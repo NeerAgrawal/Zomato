@@ -1,0 +1,20 @@
+# Phase 1 - STEP 1: Input the Zomato Data
+# Requirements for data loading, validation, preprocessing, and storage
+
+# Data Loading
+datasets>=2.14.0
+huggingface-hub>=0.16.0
+
+# Data Processing
+pandas>=2.0.0
+numpy>=1.24.0
+
+# Data Storage
+pyarrow>=12.0.0  # For Parquet support
+
+# Testing
+pytest>=7.4.0
+pytest-cov>=4.1.0
+
+# Utilities
+python-dotenv>=1.0.0  # For environment variables (if needed)
