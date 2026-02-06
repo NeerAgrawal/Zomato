@@ -35,6 +35,9 @@ def load_data():
     """Load processed data from Phase 1"""
     # Try different paths to locate the data file
     possible_paths = [
+        # 1. Deployment Lite File (Preferred for Cloud)
+        Path(__file__).parent.parent / 'phase1' / 'data' / 'zomato_lite.pkl',
+        # 2. Local Full Files
         Path(__file__).parent.parent / 'phase1' / 'data' / 'processed_zomato_data.pkl',
         Path(__file__).parent.parent / 'phase1' / 'data' / 'processed_zomato_data.csv'
     ]
