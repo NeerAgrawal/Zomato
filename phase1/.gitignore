@@ -38,6 +38,8 @@ data/
 *.csv
 *.parquet
 *.pkl
+!data/zomato_lite.pkl
+
 *.json
 
 # Test coverage

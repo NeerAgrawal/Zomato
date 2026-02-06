@@ -6,7 +6,6 @@ from pathlib import Path
 from dotenv import load_dotenv
 
 # Add parent directory to path to import from other phases
-# We need to go up one level to access other phase packages
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
 try:
@@ -26,14 +25,12 @@ st.set_page_config(
 
 # Load environment variables
 load_dotenv(Path(__file__).parent / '.env')
-# Also look in phase2 for .env if not found in phase3
 if not os.getenv('GROQ_API_KEY'):
     load_dotenv(Path(__file__).parent.parent / 'phase2' / '.env')
 
 @st.cache_data
 def load_data():
     """Load processed data from Phase 1"""
-    # Try different paths to locate the data file
     possible_paths = [
         # 1. Deployment Lite File (Preferred for Cloud)
         Path(__file__).parent.parent / 'phase1' / 'data' / 'zomato_lite.pkl',
@@ -51,52 +48,139 @@ def load_data():
     
     raise FileNotFoundError("Processed data not found in Phase 1 directory")
 
+# --- Phase 6 Aesthetics Integration ---
+CUISINE_IMAGES = {
+    'north indian': [
+        'https://images.unsplash.com/photo-1585937421612-70a008356f36?w=800&q=80',
+        'https://images.unsplash.com/photo-1626777552726-4a6b54c97e46?w=800&q=80',
+        'https://images.unsplash.com/photo-1596797038530-2c107229654b?w=800&q=80'
+    ],
+    'south indian': [
+        'https://images.unsplash.com/photo-1610192244261-3f33de3f55e0?w=800&q=80',
+        'https://images.unsplash.com/photo-1589301760576-416ccd542103?w=800&q=80',
+        'https://images.unsplash.com/photo-1630384060421-14368b74f51e?w=800&q=80'
+    ],
+    'chinese': [
+        'https://images.unsplash.com/photo-1525755662778-989d0524087e?w=800&q=80',
+        'https://images.unsplash.com/photo-1563245372-f217273d528c?w=800&q=80',
+        'https://images.unsplash.com/photo-1541696490865-e6f72421bfcc?w=800&q=80'
+    ],
+    'pizza': [
+        'https://images.unsplash.com/photo-1513104890138-7c749659a591?w=800&q=80',
+        'https://images.unsplash.com/photo-1574071318508-1cdbab80d002?w=800&q=80',
+        'https://images.unsplash.com/photo-1565299624946-b28f40a0ae38?w=800&q=80'
+    ],
+    'burger': [
+        'https://images.unsplash.com/photo-1568901346375-23c9450c58cd?w=800&q=80',
+        'https://images.unsplash.com/photo-1550547660-d9450f859349?w=800&q=80',
+        'https://images.unsplash.com/photo-1594212699903-ec8a3eca50f5?w=800&q=80'
+    ],
+    'biryani': [
+        'https://images.unsplash.com/photo-1589302168068-964664d93dc0?w=800&q=80',
+        'https://images.unsplash.com/photo-1563379091339-03b21ab4a4f8?w=800&q=80',
+        'https://images.unsplash.com/photo-1642821373181-696a54913e93?w=800&q=80'
+    ],
+    'dessert': [
+        'https://images.unsplash.com/photo-1563729768-3980346f028d?w=800&q=80',
+        'https://images.unsplash.com/photo-1551024506-0bccd828d307?w=800&q=80',
+        'https://images.unsplash.com/photo-1587314168485-3236d6710814?w=800&q=80'
+    ],
+    'cafe': [
+        'https://images.unsplash.com/photo-1509042239860-f550ce710b93?w=800&q=80',
+        'https://images.unsplash.com/photo-1559339352-11d035aa65de?w=800&q=80',
+        'https://images.unsplash.com/photo-1445116572660-d38f22089581?w=800&q=80'
+    ]
+}
+
+DEFAULT_IMAGES = [
+    'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=800&q=80',
+    'https://images.unsplash.com/photo-1552566626-52f8b828add9?w=800&q=80',
+    'https://images.unsplash.com/photo-1559339352-11d035aa65de?w=800&q=80'
+]
+
+def get_restaurant_image(name, cuisines):
+    """Deterministic image selection based on name hash"""
+    def get_index(s, max_val):
+        hash_val = 0
+        for char in s:
+            hash_val = ord(char) + ((hash_val << 5) - hash_val)
+        return abs(hash_val) % max_val
+
+    # Default logic
+    image_url = DEFAULT_IMAGES[get_index(name, len(DEFAULT_IMAGES))]
+    
+    # Cuisine match logic
+    if isinstance(cuisines, list) and len(cuisines) > 0:
+        first_cuisine = cuisines[0].lower()
+        for key, options in CUISINE_IMAGES.items():
+            if key in first_cuisine:
+                image_url = options[get_index(name, len(options))]
+                break
+                
+    return image_url
+
 def display_restaurant_card(restaurant, rank):
-    """Display a single restaurant as a card"""
+    """Display a single restaurant as a card with Phase 6 styling"""
+    name = restaurant.get('name', 'Unknown')
+    cuisines = restaurant.get('cuisines', [])
+    if isinstance(cuisines, str):
+        # Cleanup stringified list if needed
+        cuisines = [c.strip() for c in cuisines.replace('[', '').replace(']', '').replace("'", "").split(',')]
+        
+    image_url = get_restaurant_image(name, cuisines)
+    
     with st.container():
-        col1, col2 = st.columns([1, 4])
+        # Custom CSS for card-like appearance
+        st.markdown("""
+        <style>
+        div[data-testid="stVerticalBlock"] > div {
+            border-radius: 10px;
+        }
+        </style>
+        """, unsafe_allow_html=True)
+        
+        col1, col2 = st.columns([2, 5])
         
         with col1:
-            st.metric("Rank",f"#{rank}")
-            rate = restaurant.get('rate', 'N/A')
-            st.metric("Rating", f"{rate}/5", delta=f"{restaurant.get('votes', 0)} votes")
+            st.image(image_url, use_container_width=True)
+            st.caption(f"#{rank} Recommended")
             
         with col2:
-            st.subheader(restaurant.get('name', 'Unknown'))
-            st.caption(f"{restaurant.get('rest_type', 'Restaurant')} • {restaurant.get('location', '')}")
+            st.subheader(name)
+            # Use columns for compact details
+            d1, d2 = st.columns(2)
+            d1.markdown(f"⭐ **{restaurant.get('rate', 'N/A')}** ({restaurant.get('votes', 0)} votes)")
+            d2.markdown(f"💰 ₹{restaurant.get('price', 'N/A')} for two")
             
-            # Price and Cuisines
-            c1, c2 = st.columns(2)
-            c1.markdown(f"**Cost for two:** ₹{restaurant.get('price', 'N/A')}")
+            st.markdown(f"📍 {restaurant.get('location', '')}")
+            st.markdown(f"🍴 *{', '.join(cuisines[:4])}*")
             
-            cuisines = restaurant.get('cuisines', [])
-            if isinstance(cuisines, list):
-                c2.markdown(f"**Cuisines:** {', '.join(cuisines[:5])}")
-            else:
-                c2.markdown(f"**Cuisines:** {str(cuisines)}")
-            
-            # Features badges
-            features = []
-            if restaurant.get('online_order'):
-                features.append("🛵 Online Order")
-            if restaurant.get('book_table'):
-                features.append("📅 Table Booking")
-            if features:
-                st.markdown(" ".join([f"`{f}`" for f in features]))
-                
             # Reason
             reason = restaurant.get('reason', '')
             if reason:
-                st.info(f"**Why Recommended:** {reason}")
+                st.info(f"**AI Reason:** {reason}")
                 
         st.divider()
 
 def main():
-    st.title("🍽️ Zomato AI Restaurant Recommender")
-    st.markdown("Get personalized restaurant recommendations based on your preferences.")
+    # CSS Injection for Red Theme
+    st.markdown("""
+        <style>
+        .stAppHeader {background-color: #CB202D;}
+        h1 {color: #CB202D;}
+        div.stButton > button:first-child {
+            background-color: #CB202D;
+            color: white;
+            border-radius: 8px;
+        }
+        </style>
+    """, unsafe_allow_html=True)
+
+    st.title("Zomato - Restaurant Recommendation")
+    st.markdown("### 🤖 Best-in-class features for your food cravings")
     
     # Sidebar
-    st.sidebar.header("Your Preferences")
+    st.sidebar.header("Filter Options")
     
     try:
         df = load_data()
@@ -122,8 +206,8 @@ def main():
         step=50
     )
     
-    if st.sidebar.button("Find Restaurants", type="primary"):
-        with st.spinner("Finding the best spots for you..."):
+    if st.sidebar.button("Find Best Restaurants", type="primary"):
+        with st.spinner("AI is analyzing reviews and ratings..."):
             # 1. Integrate Data
             user_input = {'city': selected_city, 'price': max_price}
             integrator = DataIntegrator(df)
@@ -137,7 +221,7 @@ def main():
                 
                 # Check for API key warning using st.toast or warning
                 if not os.getenv('GROQ_API_KEY'):
-                    st.toast("⚠️ Using fallback mode (Rule-based). Set GROQ_API_KEY for AI recommendations.", icon="ℹ️")
+                    st.toast("Using fallback mode (Rule-based). Set GROQ_API_KEY for AI recommendations.", icon="ℹ️")
                 
                 recommendations = recommender.generate_recommendations(
                     filtered_df,
@@ -146,8 +230,7 @@ def main():
                 )
                 
                 # 3. Display
-                st.subheader(f"Top Recommendations in {selected_city}")
-                st.markdown(f"Found **{len(filtered_df)}** valid options, showing top **10**.")
+                st.subheader(f"Top 10 Picks in {selected_city}")
                 
                 for idx, row in recommendations.iterrows():
                     display_restaurant_card(row, idx + 1)
