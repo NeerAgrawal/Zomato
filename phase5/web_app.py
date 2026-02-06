@@ -49,26 +49,23 @@ def load_data():
     raise FileNotFoundError("Processed data not found in Phase 1 directory")
 
 # --- Phase 6 Aesthetics Integration ---
+# Verified Unsplash URLs (Fixed broken links)
 CUISINE_IMAGES = {
     'north indian': [
         'https://images.unsplash.com/photo-1585937421612-70a008356f36?w=800&q=80',
-        'https://images.unsplash.com/photo-1626777552726-4a6b54c97e46?w=800&q=80',
         'https://images.unsplash.com/photo-1596797038530-2c107229654b?w=800&q=80'
     ],
     'south indian': [
         'https://images.unsplash.com/photo-1610192244261-3f33de3f55e0?w=800&q=80',
-        'https://images.unsplash.com/photo-1589301760576-416ccd542103?w=800&q=80',
         'https://images.unsplash.com/photo-1630384060421-14368b74f51e?w=800&q=80'
     ],
     'chinese': [
         'https://images.unsplash.com/photo-1525755662778-989d0524087e?w=800&q=80',
-        'https://images.unsplash.com/photo-1563245372-f217273d528c?w=800&q=80',
         'https://images.unsplash.com/photo-1541696490865-e6f72421bfcc?w=800&q=80'
     ],
     'pizza': [
         'https://images.unsplash.com/photo-1513104890138-7c749659a591?w=800&q=80',
-        'https://images.unsplash.com/photo-1574071318508-1cdbab80d002?w=800&q=80',
-        'https://images.unsplash.com/photo-1565299624946-b28f40a0ae38?w=800&q=80'
+        'https://images.unsplash.com/photo-1574071318508-1cdbab80d002?w=800&q=80'
     ],
     'burger': [
         'https://images.unsplash.com/photo-1568901346375-23c9450c58cd?w=800&q=80',
@@ -77,7 +74,6 @@ CUISINE_IMAGES = {
     ],
     'biryani': [
         'https://images.unsplash.com/photo-1589302168068-964664d93dc0?w=800&q=80',
-        'https://images.unsplash.com/photo-1563379091339-03b21ab4a4f8?w=800&q=80',
         'https://images.unsplash.com/photo-1642821373181-696a54913e93?w=800&q=80'
     ],
     'dessert': [
